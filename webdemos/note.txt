@@ -1,0 +1,12 @@
+Python modules
+There are some extensively used Python modules which help in opening URLs. Let
+us have a look at them:
+•  httplib2 : This is a comprehensive HTTP client library. It supports many
+features that are left out of other HTTP libraries. It supports features like
+caching, keep-alive, compression, redirects and many kinds of authentication.
+•  urllib2 : This is an extensively used module for fetching HTTP URLs in a
+complex world. It defines functions and classes that help with URL actions
+such as basic and digest authentication, redirections, cookies, and so on.
+•  Requests : This is an Apache2 licensed HTTP library which is written in
+Python, gifted with many capabilities to result in productivity.
+

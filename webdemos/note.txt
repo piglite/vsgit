@@ -1,12 +1,472 @@
-Python modules
-There are some extensively used Python modules which help in opening URLs. Let
-us have a look at them:
-•  httplib2 : This is a comprehensive HTTP client library. It supports many
-features that are left out of other HTTP libraries. It supports features like
-caching, keep-alive, compression, redirects and many kinds of authentication.
-•  urllib2 : This is an extensively used module for fetching HTTP URLs in a
-complex world. It defines functions and classes that help with URL actions
-such as basic and digest authentication, redirections, cookies, and so on.
-•  Requests : This is an Apache2 licensed HTTP library which is written in
-Python, gifted with many capabilities to result in productivity.
+1. Making a simple request
+Now let us create our first request for getting a web page, which is very simple.
+The process includes importing the  requests module, and then getting the
+web page with the  get method. Let us look into an example:
+    import requests
+    r = requests.get('http://google.com')
+In the preceding example, we get the  google webpage, using  requests.get
+and saving it in the variable  r, which turns out to be the  response object. The
+response object  r contains a lot of information about the response, such as header
+information, content, type of encoding, status code, URL information and many
+more sophisticated details.
+
+2.  passing parameters
+The following is the syntax used for passing parameters:
+    parameters = {'key1': 'value1', 'key2': 'value2'}
+    r = requests.get('url', params=parameters)
+let us get a GitHub user details by logging intoGitHub, using  requests as 
+shown in the following code:
+>>> r = requests.get('https://api.github.com/user', auth=('myemailid.
+mail.com', 'password'))
+>>> r.status_code
+200
+>>> r.url
+u'https://api.github.com/user'
+>>> r.request
+<PreparedRequest [GET]>
+We have used the  auth tuple which enables Basic/Digest/Custom Authentication to
+login to GitHub and get the user details. 
+
+3. Response content
+If we access the value of  r.content , it results us the response content in a raw
+string format. And if we access  r.text , the Requests library encodes the response
+( r.content value) using  r.encoding and returns a new encoding string. In case,
+if the value of  r.encoding is  None , Requests assumes the encoding type using
+r.apparent_encoding , which is provided by the  chardet library.
+import requests
+r = requests.get('https://sports.sina.com.cn')
+print(r.status_code)
+print(r.headers['content-type'])
+print('content:----->',r.content)
+print('===============================================')
+print(r.encoding)
+r.encoding='utf-8'
+print(r.encoding)
+print('text----->',r.text)
+默认的时候r使用的是iso-8859-1编码，所以如果直接r.text的话会有中文乱码。
+将encoding变为utf-8之后再次r.text，可以正常显示中文。
+
+4.  Different types of request contents
+
+Custom headers
+
+We can send custom headers with a request. For that, we just need to create a
+dictionary with our headers and pass the headers parameter in the  get , or  post
+method. In the dictionary, key is the name of the header and the value is, well,
+the value of the pair. Let us pass an HTTP header to a request:
+>>> import json
+>>> url = 'https://api.github.com/some/endpoint'
+>>> payload = {'some': 'data'}
+>>> headers = {'Content-Type': 'application/json'}
+>>> r = requests.post(url, data=json.dumps(payload), headers=headers)
+In this example, we have sent a header  content-type with a value  application/
+json , as a parameter to the request.
+
+Sending form-encoded data
+
+We can send form-encoded data like an HTML form using Requests. A simple
+dictionary to the data argument gets this done. 
+>>> payload = {'key1': 'value1', 'key2': 'value2'}
+>>> r = request.post("some_url/post", data=payload)
+
+Posting multipart encoded files
+
+We can achieve this in requests using files which is a dictionary of  'name' and value
+of  file-like-objects . And also we can specify it as  'name' , and value could
+be  'filename' ,  fileobj just like in the following way:
+{'name' : file-like-objects} or {'name': ('filename', fileobj)}
+The example is as follows:
+>>> url = 'some api endpoint'
+>>> files = {'file': open('plan.csv', 'rb')}
+>>> r = requests.post(url, files=files)
+In the former example, we didn't specify the content-type or headers. To add to that,
+we have the capability to set the name for the file we are uploading:
+>>> url = 'some url'
+>>> files = {'file': ('plan.csv', open('plan.csv', 'rb'), 'application/
+csv', {'Expires': '0'})}
+>>> r = requests.post(url, files)
+
+response status codes
+
+To know about this, we can use  status_code :
+>>> r = requests.get('http://google.com')
+>>> r.status_code
+200
+To make it much easier to deal with  status_codes , Requests has got a built-in
+status code lookup object which serves as an easy reference. 
+We have got the facility to deal with the bad  requests like 4XX and 5XX type
+of errors, by notifying with the error codes. This can be accomplished by using
+Response.raise_for_status() .
+
+Viewing response headers
+
+The server response header helps us to know about the software used by the
+origin server to handle the request. We can access the server response headers
+using  r.headers :
+>>> r = requests.get('http://google.com')
+>>> r.headers
+
+Requests for Comments (RFC) 7230 says that HTTP header names are not
+case-sensitive. This gives us a capability to access the headers with both capital
+and lower-case letters.
+>>> r.headers['Content-Type']
+'text/html; charset=ISO-8859-1'
+>>> r.headers.get('content-type')
+'text/html; charset=ISO-8859-1'
+
+Accessing cookies with Requests
+
+We can access cookies from the response, if they exist:
+>>> url = 'http://somewebsite/some/cookie/setting/url'
+>>> r = requests.get(url)
+>>> r.cookies['some_cookie_name']
+'some_cookie_value'
+
+We can send our own cookies, as shown in the following example:
+>>> url = 'http://httpbin.org/cookies'
+>>> cookies = dict(cookies_are='working')
+>>> r = requests.get(url, cookies=cookies)
+>>> r.text
+
+Tracking redirection of the request using request history
+Sometimes the URL that we are accessing may have been moved or it might
+get redirected to some other location. We can track them using Requests. The
+response object's history property can be used to track the redirection.
+    import requests
+    r = requests.get('https://vts.vipcode.com')
+    print(r.status_code)
+    r.encoding='utf-8'
+    print(r.url)
+    print(r.history) 
+
+    200
+    https://vts.vipcode.com/login
+    [<Response [302]>]
+
+Using timeout to keep productive usage in check
+
+If we don't want to get the process moving forward and give out an exception
+if it exceeds a specific amount of time, we can use the parameter  timeout .
+It's a good practice to raise an exception if no bytes have been acknowledged on the underlying socket for the
+stated  timeout in seconds.
+
+Errors and exceptions
+Different types of errors and exceptions will be raised when something goes wrong
+in the process of sending a request and getting back a response. Some of them are
+as follows:
+•  HTTPError : When there are invalid HTTP responses, Requests will raise an
+HTTPError exception
+•  ConnectionError : If there is a network problem, such as refused connection
+and DNS failure, Requests will raise a  ConnectionError exception
+•  Timeout : If the request gets timed out, this exception will be raised
+•  TooManyRedirects : If the request surpasses the configured number of
+maximum redirections, this type of exception is raised
+
+5. Persisting parameters across Requests using Session objects
+
+The Requests module contains a  session object, which has the capability to persist
+settings across the requests.
+
+With  session object, we can specify some default values of the properties,
+which needs to be sent to the server using GET, POST, PUT and so on. We can
+achieve this by specifying the values to the properties like  headers ,  auth and
+so on, on a  Session object.
+>>> import requests
+>>> session = requests.Session()
+>>> session.params = {"key1": "value", "key2": "value2"}
+>>> session.auth = ('username', 'password')
+>>> session.headers.update({'foo': 'bar'})
+In the preceding example, we have set some default values to the properties—
+params ,  auth , and  headers using the  session object. 
+We can override them in the subsequent request, as shown in the following example, 
+if we want to:
+>>> session.get('http://mysite.com/new/url', headers={'foo': 'new-bar'})
+
+6. Revealing the structure of a request and response
+
+发起请求时：
+A Requests object is the one which is created by the user when he/she tries to
+interact with a web resource. It will be sent as a prepared request to the server
+and does contain some parameters which are optional. 
+Let us have an eagle eye view on the parameters:
+•  Method : This is the HTTP method to be used to interact with the web service.
+For example: GET, POST, PUT.
+•  URL : The web address to which the request needs to be sent.
+•  headers : A dictionary of headers to be sent in the request.
+•  files : This can be used while dealing with the multipart upload. It's the
+dictionary of files, with key as file name and value as file object.
+•  data : This is the body to be attached to the  request.json . There are two cases that 
+come in to the picture here:
+° If  json is provided,  content-type in the header is changed to  application/json and 
+at this point,  json acts as a body to the request.
+° In the second case, if both  json and  data are provided together, data is silently ignored.
+•  params : A dictionary of URL parameters to append to the URL.
+•  auth : This is used when we need to specify the authentication to the request. It's a 
+tuple containing username and password.
+•  cookies : A dictionary or a cookie jar of cookies which can be added to the request.
+•  hooks : A dictionary of callback hooks.
+
+获得响应时：
+A Response object contains the response of the server to a HTTP request. It is
+generated once Requests gets a response back from the server. It contains all
+of the information returned by the server and also stores the Request object we
+created originally.
+Whenever we make a call to a server using the  requests , two major transactions are
+taking place in this context which are listed as follows:
+•  We are constructing a Request object which will be sent out to the server to
+request a resource
+•  A Response object is generated by the  requests module
+
+>>> response = requests.get('https://python.org')
+In the preceding line of code, a  requests object gets constructed and will be
+sent to  'https://python.org' . Thus obtained Requests object will be stored
+in the  response.request variable. 
+response中包含着原先的request(也就是prepared request对象)
+We can access the headers of the Request object which was sent off to the server in the following way:
+从response中获得起初request的头，采用resposne.request.headers
+>>> response.request.headers
+The headers returned by the server can be accessed with its 'headers' attribute as
+shown in the following example:
+如果要获得响应的头部，直接response.headers即可
+>>> response.headers
+
+7. Using prepared Requests
+
+Every request we send to the server turns to be a  PreparedRequest by default.
+The  request attribute of the  Response object which is received from an API call
+or a session call is actually the  PreparedRequest that was used.
+There might be cases in which we ought to send a request which would incur an
+extra step of adding a different parameter. Parameters can be  cookies ,  files ,
+auth ,  timeout and so on. We can handle this extra step efficiently by using the
+combination of sessions and prepared requests. Let us look at an example:
+>>> from requests import Request, Session
+>>> header = {}
+>>> request = Request('get', 'some_url', headers=header)
+We are trying to send a  get request with a header in the previous example. 
+
+we can use the session method to receive complete session level state to access the
+parameters of the initial sent request. This can be done by using the  session object.
+>>> from requests import Request, Session
+>>> session = Session()
+>>> request1 = Request('GET', 'some_url', headers=header)
+Now, let us prepare a request using the  session object to get the values of the session level state:
+>>> prepare = session.prepare_request(request1)
+We can send the request object  request with more parameters now, as follows:
+>>> response = session.send(prepare, stream=True, verify=True)
+200
+The  prepare method prepares the complete request with the supplied parameters.
+In the previous example, the  prepare_request method was used. There are
+also some other methods like  prepare_auth ,  prepare_body ,  prepare_cookies ,
+prepare_headers ,  prepare_hooks ,  prepare_method ,  prepare_url which are
+used to create individual properties.
+结合使用session和request构建请求对象，request中包含一些特定的参数，其余的参数可以从
+session对象中获得。结合session和request构成实际发起请求的对象。
+
+8. Body Content Workflow
+Take an instance where a continuous stream of data is being downloaded when we
+make a request. In this situation, the client has to listen to the server continuously
+until it receives the complete data. Consider the case of accessing the content from
+the response first and the worry about the body next. In the above two situations,
+we can use the parameter  stream . Let us look at an example:
+>>> requests.get("https://pypi.python.org/packages/source/F/Flask/Flask-
+0.10.1.tar.gz", stream=True)
+If we make a request with the parameter  stream=True, the connection remains
+open and only the headers of the response will be downloaded. This gives us the
+capability to fetch the content whenever we need by specifying the conditions like
+the number of bytes of data.
+The syntax is as follows:
+    if int(request.headers['content_length']) < TOO_LONG:
+        content = r.content
+The important thing that should be noted while using the stream
+parameter is it doesn't release the connection when it is set as True,
+unless all the data is consumed or response.close is executed.
+By setting the parameter  stream=True and by accessing the response as a file-like
+object that is  response.raw , if we use the method  iter_content, we can iterate
+over  response.data . This will avoid reading of larger responses at once.
+The syntax is as follows:
+    iter_content(chunk_size=size in bytes, decode_unicode=False)
+In the same way, we can iterate through the content using  iter_lines method
+which will iterate over the response data one line at a time.
+    iter_lines(chunk_size = size in bytes, decode_unicode=None, delimitter=None)
+
+9. Streaming uploads
+A file-like object which is of massive size can be streamed and uploaded using
+the  Requests library. All we need to do is to supply the contents of the stream as
+a value to the  data attribute in the  request call as shown in the following lines.
+The syntax is as follows:
+    with open('massive-body', 'rb') as file:
+        requests.post('http://example.com/some/stream/url',data=file)
+
+Requests supports chunked transfer encoding, for both outgoing and incoming requests. In order to
+send a chunk encoded request, we need to supply a generator for your body.
+The usage is shown in the following example:
+>>> def generator():
+... yield "Hello "
+... yield "World!"
+...
+>>> requests.post('http://example.com/some/chunked/url/path',
+data=generator())
+
+10. Getting the request method arguments with event hooks
+We can alter the portions of the request process signal event handling using hooks.
+For example, there is hook named  response which contains the response generated
+from a request. 
+The syntax is as follows:
+    hooks = {hook_name: callback_function, … }
+Here is an example of a callback function:
+>>> def print_attributes(request, *args, **kwargs):
+... print(request.url)
+... print(request .status_code)
+... print(request .headers)
+Now let us print some of the attributes of the request, using the preceding
+callback_function :
+>>> requests.get('https://www.python.org/',hooks=dict(response=print_attributes))
+
+https://www.python.org/
+200
+CaseInsensitiveDict({'content-type': 'text/html; ...})
+代码示例：
+import requests
+def myfunc(req,*args,**kwargs):
+    print('请求路径：',req.url)
+    print('请求状态码：',req.status_code)
+    print('请求头：',req.headers)
+
+requests.get('http://www.douban.com',hooks={'response':myfunc})
+当产生response后控制台打印内容为：
+请求路径： http://www.douban.com/
+请求状态码： 301
+请求头： {'Date': 'Sun, 05 Aug 2018 01:34:25 GMT', 'Content-Type': 'text/html', 'Content-Length': '178', 'Connection': 'keep-alive',
+ 'Keep-Alive': 'timeout=30', 'Location': 'https://www.douban.com/', 'Server': 'dae'}
+请求路径： https://www.douban.com/
+请求状态码： 200
+请求头： {'Date': 'Sun, 05 Aug 2018 01:34:25 GMT', 'Content-Type': 'text/html; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Conn
+ection': 'keep-alive', 'Keep-Alive': 'timeout=30', 'Vary': 'Accept-Encoding', 'X-Xss-Protection': '1; mode=block', 'X-Douban-Mobileapp': '0', 'Expires': 'Sun, 1 Jan 2006 01:00:00 GMT', 'Pragma': 'no-cache', 'Cache-Control': 'must-revalidate, no-cache, private', 'Set-Cookie': 'll="108288"; path=/; domain=.douban.com; expires=Mon, 05-Aug-2019 01:34:25 GMT, bid=hXzEUCrhyNA; Expires=Mon, 05-Aug-19 01:34:25 GMT; Domain=.douban.com; Path=/', 'X-DOUBAN-NEWBID': 'hXzEUCrhyNA', 'X-DAE-Node': 'anson41', 'X-DAE-App':
+'sns', 'Server': 'dae', 'X-Frame-Options': 'SAMEORIGIN', 'Strict-Transport-Security': 'max-age=15552000;', 'Content-Encoding': 'gzip'}
+
+11. Iterating over streaming APIs
+Streaming API tends to keep the request open allowing us to collect the stream
+data in real time. 
+While dealing with a continuous stream of data, to ensure that
+none of the messages being missed from it we can take the help of  iter_lines() in
+Requests. The  iter_lines() iterates over the response data line by line. 
+This can be achieved by setting the parameter stream as  True while sending the request.
+
+12.Encodings
+As specified in the HTTP protocol (RFC 7230), applications can request the server
+to return the HTTP responses in an encoded format.
+When the HTTP header fails to return the type of encoding, Requests will try to
+assume the encoding with the help of  chardet.
+we access the response headers of a request, it does contain the keys of
+content-type . Let us look at a response header's  content-type :
+>>> re = requests.get('http://google.com')
+>>> re.headers['content-type']
+'text/html; charset=ISO-8859-1'
+In case we are dealing with different types of encodings
+like  'utf-8', we can explicitly specify the encoding by setting the property to
+Response.encoding .
+
+13 HTTP verbs
+Requests support the usage of the full range of HTTP verbs which are defined in
+the following table. To most of the supported verbs,  'url' is the only argument
+that must be passed while using them.
+
+GET GET method requests a representation of the specified resource.
+    requests.get(url, **kwargs)
+
+POST verb is used for the creation of new resources. The submitted
+data will be handled by the server to a specified resource.
+    requests.post(url, data=None, json=None, **kwargs)
+
+PUT method uploads a representation of the specified URI. If the URI is not
+pointing to any resource, the server can create a new object with the given
+data or it will modify the existing resource.
+    requests.delete(url, **kwargs)
+
+DELETE used to delete the specified resource.
+    requests.delete(url, **kwargs)
+
+HEAD This verb is useful for retrieving meta-information written in response
+headers without having to fetch the response body.
+    requests.head(url, **kwargs)
+
+OPTIONS method which returns the HTTP methods that the server supports for a specified URL.
+    requests.options(url, **kwargs)
+
+PATCH This method is used to apply partial modifications to a resource.
+    requests.patch(url, data=None, **kwargs)
+
+>>> url = "https://api.github.com/search/code?q=addClass+user:mozilla&page=1&per_page=4"
+>>> response = requests.head(url=url)
+>>> response.headers['link']
+
+14 We will cover the following topics:
+•  Basic authentication
+•  Digest authentication
+•  Kerberos authentication
+•  OAuth authentication
+•  Custom Authentication
+
+15 Basic authentication
+The submitted  user-ID and  password are encoded using  Base64 encoding standards and transmitted across HTTP. The
+server gives access to the user only if the  user-ID and the  password are valid. 
+The process can be seen as follows:
+>>> from requests.auth import HTTPBasicAuth
+>>> requests.get('https://demo.example.com/resource/path', auth=HTTPBasicAuth('user-ID', 'password'))
+we performed basic authentication by creating an
+HTTPBasicAuth object; then we passed it to the  auth parameter, which will be
+submitted to the server. If the submitted credentials gets authenticated successfully,
+the server returns a  200 (Successful) response, otherwise, it will return a  401
+(Unauthorized) response.
+
+16 Digest authentication
+This type of authentication makes use of  user-ID and  password just like Basic
+authentication, when the user submits the password for the sake of authentication, 
+the browser will apply an MD5 hashing scheme on it.
+>>> from requests.auth import HTTPDigestAuth
+>>> requests.get('https://demo.example.com/resource/path',auth=HTTPDigestAuth('user-ID', 'password'))
+
+17 OAuth authentication
+OAuth is an open standard authorization protocol, which allows client applications
+a secure delegated access to the user accounts on third party services such as Google,
+Twitter, GitHub and so on.
+
+18 Mocking HTTP Requests Using HTTPretty
+
+19 Web Scraping with Python Requests and BeautifulSoup
+In most cases, we deal with three types of data when working with web sources.
+They are as follows:
+•  Structured data
+•  Unstructured data
+•  Semistructured Data
+
+Structured data is a type of data that exists in an organized form. Normally,
+structured data has a predefined format and it is machine readable.Databases always contain 
+structured data, and SQL techniques can be used to access data from them. 
+In contrast to structured data, unstructured data either misses out on a standard
+format or stays unorganized even though a specific format is imposed on it. 
+To handle unstructured data, different techniques such as text analytics, 
+Natural Language Processing (NLP), and data mining are used. Images,
+scientific data, text-heavy content (such as newspapers, health records, and so on),
+come under the unstructured data type.
+Semistructured data is a type of data that follows an irregular trend or has a structure
+which changes rapidly. 
+Semistructured data may contain information that is transferred from different sources.
+Scraping is the technique that is used to extract information from this type of data. The
+information available on the Web is a perfect example of semistructured data.
+
+Generally, the process of web scraping requires the use of different tools and libraries
+such as the following:
+•  Chrome DevTools or FireBug Add-on: This can be used to pinpoint the pieces of information in an HTML/XML page.
+•  HTTP libraries: These can be used to interact with the server and to pull a response document. An example of this is  python-requests .
+•  Web scraping tools: These are used to pull data from a semistructured document. Examples include  BeautifulSoup or  Scrappy .
+
+The overall picture of web scraping can be observed in the following steps:
+1. Identify the URL(s) of the web resource to perform the web scraping task.
+2. Use your favorite HTTP client/library to pull the semistructured document.
+3. Before extracting the desired data, discover the pieces of data that are in
+semistructured format.
+4. Utilize a web scraping tool to parse the acquired semistructured document
+into a more structured one.
+5. Draw the desired data that we are hoping to use. That's all, we are done!
 

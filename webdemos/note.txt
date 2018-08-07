@@ -470,3 +470,26 @@ semistructured format.
 into a more structured one.
 5. Draw the desired data that we are hoping to use. That's all, we are done!
 
+20. 读入HTML
+本地文档：
+from bs4 import BeautifulSoup
+from os.path import join,dirname,abspath,pardir
+p = join(dirname(dirname(__file__)),r'html\scrap_examp.html')
+htmlObj =  BeautifulSoup(open(p))
+其中dirname(dirname(__file__))是获取当前文件所在文件夹的父目录，然后找到父目录下的html文件夹下的scrap_examp.html文件
+将其读入形成一个BeautifulSoup对象。
+Here is the syntax to search the whole document to identify the tags:
+•  find(name, attributes, recursive, text, **kwargs)
+    ° name : This is the first occurring tag name that appears in the process
+             of discovery. It can be a string, a regular expression, a list, a function,
+             or the value True .
+•  find_all(name, attributes, recursive, text, limit, **kwargs)
+    ° name : This is used to access specific types of tags with their name.
+             It can be a string, a regular expression, a list, a function, or the value True .
+    ° limit : This is the maximum number of results in the output.
+The common attributes for the preceding two methods are as follows:
+•  attributes : These are the attributes of an HTML/XML tag.
+•  recursive : This takes a Boolean value. If it is set to  True , the  BeautifulSoup
+library checks all the children of a specific tag. Vice versa, if it is set to  False ,
+the  BeautifulSoup library checks the child at the next level only.
+•  text : This parameter identifies tags that consist of the string content.

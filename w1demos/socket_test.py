@@ -23,4 +23,4 @@ def geocode(address):
 
 if __name__=='__main__':
     geocode('207 N. Definace St, Archbold, OH')
-    
+  

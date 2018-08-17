@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request,current_app,render_template
+from flask import request,current_app,render_template,url_for
 from flask_bootstrap import Bootstrap
 app = Flask(__name__)
 Bootstrap(app)
@@ -18,6 +18,8 @@ def say(name):
 
 @app.errorhandler(404)
 def page_not_found(err):
+    print(url_for('say',name='ABC',_external=True))
+    print(url_for('index',name='ABC',_external=True))
     return render_template('my404.html'),404
 
 if __name__=='__main__':
